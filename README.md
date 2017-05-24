@@ -38,6 +38,35 @@ deepForceUpdate(instance);
 deepForceUpdate(instance, "translations");
 ```
 
+If you want to use it in a component, you have to pass it a React instance which you can get via `ref`.
+
+```js
+class TranslationProvider extends React.Component {
+  static childContextTypes = {
+    translations: PropTypes.object,
+  }
+
+  getChildContext() {
+    return {
+      translations: this.props.translations
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.childRef && prevProps.translations !== this.props.translations) {
+      deepForceUpdate(this.childRef, "translations");
+    }
+  }
+
+  saveChildRef = c => {this.childRef = c}
+
+  render() {
+    const child = Children.only(this.props.children);
+    return cloneElement(child, {ref: this.saveChildRef});
+  }
+}
+```
+
 ## React Native
 
 This will work with React Native when [facebook/react-native#2985](https://github.com/facebook/react-native/issues/2985) lands.  
