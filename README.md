@@ -5,11 +5,11 @@ react-deep-force-update
 [![npm version](https://img.shields.io/npm/v/react-deep-force-update.svg?style=flat-square)](https://www.npmjs.com/package/react-deep-force-update) 
 [![npm downloads](https://img.shields.io/npm/dm/react-deep-force-update.svg?style=flat-square)](https://www.npmjs.com/package/react-deep-force-update)
 
-Force-updates React component tree recursively.
+Force-updates React component tree recursively, optionally only for subscribers to a certain `context`.
 
-**Don’t use this in your application code!**
+**Use sparingly!**
 
-You’ll only need this if you’re writing a React development tool and you want to enforce a deep update regardless of what component classes have to say.
+Force-updating the React tree is a heavy operation and in most cases you should use listeners instead.
 
 ## Installation
 
@@ -32,6 +32,39 @@ const instance = render(<Something />);
 // even if components in the middle of it
 // define a strict shouldComponentUpdate().
 deepForceUpdate(instance);
+
+// Only force-updates components that subscribe to the
+// context variable named "translations"
+deepForceUpdate(instance, "translations");
+```
+
+If you want to use it in a component, you have to pass it a React instance which you can get via `ref`.
+
+```js
+class TranslationProvider extends React.Component {
+  static childContextTypes = {
+    translations: PropTypes.object,
+  }
+
+  getChildContext() {
+    return {
+      translations: this.props.translations
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.childRef && prevProps.translations !== this.props.translations) {
+      deepForceUpdate(this.childRef, "translations");
+    }
+  }
+
+  saveChildRef = c => {this.childRef = c}
+
+  render() {
+    const child = Children.only(this.props.children);
+    return cloneElement(child, {ref: this.saveChildRef});
+  }
+}
 ```
 
 ## React Native

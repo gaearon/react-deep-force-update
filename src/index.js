@@ -20,8 +20,11 @@ function traverseRenderedChildren(internalInstance, callback, argument) {
   }
 }
 
-function setPendingForceUpdate(internalInstance) {
-  if (internalInstance._pendingForceUpdate === false) {
+function setPendingForceUpdate(internalInstance, contextName) {
+  if (
+    (contextName ? (internalInstance._instance && internalInstance._instance.context[contextName]) : true) &&
+    internalInstance._pendingForceUpdate === false
+  ) {
     internalInstance._pendingForceUpdate = true;
   }
 }
@@ -39,8 +42,8 @@ function forceUpdateIfPending(internalInstance) {
   }
 }
 
-export default function deepForceUpdate(instance) {
+export default function deepForceUpdate(instance, contextName) {
   const internalInstance = instance._reactInternalInstance;
-  traverseRenderedChildren(internalInstance, setPendingForceUpdate);
-  traverseRenderedChildren(internalInstance, forceUpdateIfPending);
+  traverseRenderedChildren(internalInstance, setPendingForceUpdate, contextName);
+  traverseRenderedChildren(internalInstance, forceUpdateIfPending, contextName);
 }
