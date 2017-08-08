@@ -36,8 +36,9 @@
     "eslint-config-airbnb": "0.0.6",
     "eslint-plugin-react": "^2.3.0",
     "expect": "^1.6.0",
+    "jsdom": "^7.2.2",
     "mocha": "^2.2.5",
-    "mocha-jsdom": "^1.0.0",
+    "mocha-jsdom": "^1.1.0",
     "react": "^0.14.0-rc1",
     "react-addons-test-utils": "^0.14.0-rc1",
     "rimraf": "^2.3.4"
