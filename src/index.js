@@ -1,3 +1,8 @@
+
+// Constant to identify a React Component. It's been extracted from ReactTypeOfWork
+// (https://github.com/facebook/react/blob/master/src/shared/ReactTypeOfWork.js#L20)
+const ReactClassComponent = 2;
+
 function traverseRenderedChildren(internalInstance, callback, argument) {
   callback(internalInstance, argument);
 
@@ -33,10 +38,51 @@ function forceUpdateIfPending(internalInstance, React) {
   }
 }
 
+function deepForceUpdateStack(instance, React) {
+  const internalInstance = instance._reactInternalInstance;
+  traverseRenderedChildren(internalInstance, setPendingForceUpdate);
+  traverseRenderedChildren(internalInstance, forceUpdateIfPending, React);
+}
+
+function deepForceUpdate(instance, React) {
+  const root = instance._reactInternalInstance;
+  if (typeof root.tag !== 'number') {
+    // Traverse stack-based React tree.
+    return deepForceUpdateStack(instance, React);
+  }
+
+  let node = root;
+  while (true) {
+    if (node.tag === ReactClassComponent) {
+      const publicInstance = node.stateNode;
+      const { updater } = publicInstance;
+      if (typeof publicInstance.forceUpdate === 'function') {
+        publicInstance.forceUpdate();
+      } else if (updater && typeof updater.enqueueForceUpdate === 'function') {
+        updater.enqueueForceUpdate(publicInstance);
+      }
+    }
+    if (node.child) {
+      node.child.return = node;
+      node = node.child;
+      continue;
+    }
+    if (node === root) {
+      return undefined;
+    }
+    while (!node.sibling) {
+      if (!node.return || node.return === root) {
+        return undefined;
+      }
+      node = node.return;
+    }
+    node.sibling.return = node.return;
+    node = node.sibling;
+  }
+}
+
 export default function getForceUpdate(React) {
   return instance => {
-    const internalInstance = instance._reactInternalInstance;
-    traverseRenderedChildren(internalInstance, setPendingForceUpdate);
-    traverseRenderedChildren(internalInstance, forceUpdateIfPending, React);
+    deepForceUpdate(instance, React);
   };
 }
