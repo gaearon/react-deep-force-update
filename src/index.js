@@ -24,10 +24,16 @@ function traverseRenderedChildren(internalInstance, callback, argument) {
   }
 }
 
+function extractPublicInfoStack(internalInstance) {
+  return {
+    publicInstance: internalInstance._instance,
+  }
+}
+
 function setPendingForceUpdate(internalInstance, shouldUpdate) {
   if (
     internalInstance._pendingForceUpdate === false &&
-    shouldUpdate(internalInstance)
+    (!shouldUpdate || shouldUpdate(extractPublicInfoStack(internalInstance)))
   ) {
     internalInstance._pendingForceUpdate = true
   }
@@ -43,7 +49,9 @@ function forceUpdateIfPending(internalInstance, onUpdate) {
     } else if (updater && typeof updater.enqueueForceUpdate === 'function') {
       updater.enqueueForceUpdate(publicInstance)
     }
-    onUpdate(internalInstance)
+    if (onUpdate) {
+      onUpdate(extractPublicInfoStack(internalInstance))
+    }
   }
 }
 
@@ -57,10 +65,20 @@ function deepForceUpdateStack(instance, shouldUpdate, onUpdate) {
   traverseRenderedChildren(internalInstance, forceUpdateIfPending, onUpdate)
 }
 
+function extractPublicInfoFiber(internalInstance) {
+  const childFileName = internalInstance.child &&
+    internalInstance.child._debugSource &&
+    internalInstance.child._debugSource.fileName;
+  return {
+    childFileName,
+    publicInstance: internalInstance.stateNode,
+  }
+}
+
 export default function deepForceUpdate(
   instance,
-  shouldUpdate = () => true,
-  onUpdate = () => {},
+  shouldUpdate,
+  onUpdate,
 ) {
   const root = instance._reactInternalFiber || instance._reactInternalInstance
   if (typeof root.tag !== 'number') {
@@ -70,7 +88,10 @@ export default function deepForceUpdate(
 
   let node = root
   while (true) {
-    if (node.tag === ReactClassComponent && shouldUpdate(node)) {
+    if (
+      node.tag === ReactClassComponent &&
+      (!shouldUpdate || shouldUpdate(extractPublicInfoFiber(node)))
+    ) {
       const publicInstance = node.stateNode
       const { updater } = publicInstance
       if (typeof publicInstance.forceUpdate === 'function') {
@@ -78,7 +99,9 @@ export default function deepForceUpdate(
       } else if (updater && typeof updater.enqueueForceUpdate === 'function') {
         updater.enqueueForceUpdate(publicInstance)
       }
-      onUpdate(node)
+      if (onUpdate) {
+        onUpdate(extractPublicInfoFiber(node))
+      }
     }
     if (node.child) {
       node.child.return = node
