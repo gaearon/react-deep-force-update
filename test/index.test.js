@@ -198,7 +198,6 @@ describe('force update', () => {
   })
 
   it('respects shouldUpdate and onUpdate arguments', () => {
-    // Re-enable this once we support process.env.REACT_JEST_USE_FIBER = true
-    expect(() => expectNoUpdate(PureWrapperStrict, PureWrapperStrict)).toThrow()
+    expectNoUpdate(PureWrapperStrict, PureWrapperStrict)
   })
 })
