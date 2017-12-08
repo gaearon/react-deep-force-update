@@ -31,7 +31,7 @@ const instance = render(<Something />);
 // Will force-update the whole rendered tree
 // even if components in the middle of it
 // define a strict shouldComponentUpdate().
-deepForceUpdate(instance);
+deepForceUpdate(React)(instance);
 ```
 
 ## React Native
