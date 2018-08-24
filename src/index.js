@@ -1,8 +1,3 @@
-
-// Constant to identify a React Component. It's been extracted from ReactTypeOfWork
-// (https://github.com/facebook/react/blob/master/src/shared/ReactTypeOfWork.js#L20)
-const ReactClassComponent = 2;
-
 function traverseRenderedChildren(internalInstance, callback, argument) {
   callback(internalInstance, argument);
 
@@ -53,7 +48,7 @@ function deepForceUpdate(instance, React) {
 
   let node = root;
   while (true) {
-    if (node.tag === ReactClassComponent) {
+    if (node.stateNode !== null && typeof node.type === 'function') {
       const publicInstance = node.stateNode;
       const { updater } = publicInstance;
       if (typeof publicInstance.forceUpdate === 'function') {
