@@ -55,12 +55,9 @@ function deepForceUpdateStack(instance, shouldUpdate, onUpdate) {
 
 export default function deepForceUpdate(
   instance,
+  shouldUpdate = () => true,
+  onUpdate = () => {},
 ) {
-  // TODO: this is temporarily disabled because it's not in 2.x release line.
-  // See https://github.com/gaearon/react-deep-force-update/issues/8
-  let shouldUpdate = () => true;
-  let onUpdate = () => {};
-
   const root = instance._reactInternalFiber || instance._reactInternalInstance
   if (typeof root.tag !== 'number') {
     // Traverse stack-based React tree.
