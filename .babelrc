@@ -1,1 +1,1 @@
-{ "presets": ["env", "react"] }
+{ "presets": ["env", "react"], plugins: ["add-module-exports"] }
